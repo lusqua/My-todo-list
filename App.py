@@ -29,6 +29,9 @@ class Todo(Resource):
             parser.add_argument('Data')
             args = parser.parse_args()
 
+            if args['Title'] in todos:
+                return {'Title': args['Title'], 'Status': 'Já adicionado. Utilize PUT para editar.'}
+
             todos[args['Title']] = {
                 'Description': args['Description'],
                 'Data': args['Data']
@@ -39,7 +42,7 @@ class Todo(Resource):
 
             return {'Title': args['Title'], 'Description': args['Description'], 'Data': f'''{args['Data']}''', 'Status': 'Adicionado!'}
         except:
-            return {'Status': 'Falhow'}
+            return {'Status': 'A operação falhou!'}
 
     def delete(self):
         parser = reqparse.RequestParser()
@@ -49,7 +52,33 @@ class Todo(Resource):
         del todos[args['Title']]
         with open('data.json', 'w') as json_file:
             json.dump(todos, json_file)
-        return {'Removido': f"{args['Title']}", 'Status': 'OK'}
+        return {'Removido': f"{args['Title']}", 'Status': 'Deletado!'}
+
+    def put(self):
+        try:
+            parser = reqparse.RequestParser()
+
+            parser.add_argument('Title', required=True,
+                                help="Obrigatório definir um título")
+            parser.add_argument('Description', required=True,
+                                help="Obrigatorio definir uma descricao")
+            parser.add_argument('Data')
+            args = parser.parse_args()
+
+            if not args['Title'] in todos:
+                return {"Title": args["Title"], "Status": "To-do inexistente."}
+
+            todos[args['Title']] = {
+                'Description': args['Description'],
+                'Data': args['Data']
+            }
+
+            with open('data.json', 'w') as json_file:
+                json.dump(todos, json_file)
+
+            return {'Title': args['Title'], 'Description': args['Description'], 'Data': f'''{args['Data']}''', 'Status': 'Editado!'}
+        except:
+            return {"Status": 'A Operação falhou!'}
 
 
 api.add_resource(Todo, '/')
