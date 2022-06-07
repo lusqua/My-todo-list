@@ -9,4 +9,3 @@ def test_items():
 
     assert response.status_code == 200
     assert type(response.json()) == list
-
